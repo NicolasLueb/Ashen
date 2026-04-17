@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/Cloth Mesh/pbd_sim/build/_deps/glm-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

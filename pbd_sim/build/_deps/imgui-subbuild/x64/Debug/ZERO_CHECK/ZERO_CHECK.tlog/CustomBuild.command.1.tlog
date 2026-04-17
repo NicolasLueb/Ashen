@@ -1,0 +1,10 @@
+^D:\CLOTH MESH\PBD_SIM\BUILD\_DEPS\IMGUI-SUBBUILD\CMAKEFILES\766C5656783883567E8C67EF616B5628\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild" "-BD:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/imgui-populate.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

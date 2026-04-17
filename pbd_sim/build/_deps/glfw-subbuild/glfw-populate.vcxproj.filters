@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\4a6ecae8bdeb9a2c3fc69abdcecdd7dc\glfw-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\3b8eef8cceb585d78eebe92db3426420\glfw-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\68b90bba509458d5ed8d71bbe65b497a\glfw-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\Cloth Mesh\pbd_sim\build\_deps\glfw-subbuild\CMakeFiles\glfw-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{6EA31538-A878-3CAC-A66E-0F13BF3D5A72}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

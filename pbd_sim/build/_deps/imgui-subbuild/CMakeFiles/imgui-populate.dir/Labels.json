@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/imgui-populate"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/766c5656783883567e8c67ef616b5628/imgui-populate.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/e8712ae5262c312891c86fb31755e0d7/imgui-populate-complete.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-build.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-configure.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-download.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-install.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-mkdir.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-patch.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-test.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/imgui-subbuild/CMakeFiles/d825b632bb8abbe9b62230eabc7e0494/imgui-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"imgui-populate"
+		],
+		"name" : "imgui-populate"
+	}
+}

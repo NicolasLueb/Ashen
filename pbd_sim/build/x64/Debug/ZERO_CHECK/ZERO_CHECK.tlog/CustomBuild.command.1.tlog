@@ -1,0 +1,10 @@
+^D:\CLOTH MESH\PBD_SIM\BUILD\CMAKEFILES\5CC4AEE0F96FE54B8ED1D5D215CCBAA5\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/Cloth Mesh/pbd_sim" "-BD:/Cloth Mesh/pbd_sim/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "D:/Cloth Mesh/pbd_sim/build/pbd_sim.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

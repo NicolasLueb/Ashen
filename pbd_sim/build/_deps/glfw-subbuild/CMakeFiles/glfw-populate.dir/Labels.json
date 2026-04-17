@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/glfw-populate"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/68b90bba509458d5ed8d71bbe65b497a/glfw-populate.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/3b8eef8cceb585d78eebe92db3426420/glfw-populate-complete.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-build.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-configure.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-download.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-install.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-mkdir.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-patch.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-test.rule"
+		},
+		{
+			"file" : "D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"glfw-populate"
+		],
+		"name" : "glfw-populate"
+	}
+}

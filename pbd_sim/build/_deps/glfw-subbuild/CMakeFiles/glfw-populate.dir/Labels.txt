@@ -1,0 +1,14 @@
+# Target labels
+ glfw-populate
+# Source files and their labels
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/glfw-populate
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/68b90bba509458d5ed8d71bbe65b497a/glfw-populate.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/3b8eef8cceb585d78eebe92db3426420/glfw-populate-complete.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-build.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-configure.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-download.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-install.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-mkdir.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-patch.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-test.rule
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-subbuild/CMakeFiles/4a6ecae8bdeb9a2c3fc69abdcecdd7dc/glfw-populate-update.rule

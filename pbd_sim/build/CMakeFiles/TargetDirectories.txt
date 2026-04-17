@@ -1,0 +1,16 @@
+D:/Cloth Mesh/pbd_sim/build/CMakeFiles/glad.dir
+D:/Cloth Mesh/pbd_sim/build/CMakeFiles/imgui_lib.dir
+D:/Cloth Mesh/pbd_sim/build/CMakeFiles/pbd_sim.dir
+D:/Cloth Mesh/pbd_sim/build/CMakeFiles/INSTALL.dir
+D:/Cloth Mesh/pbd_sim/build/CMakeFiles/ALL_BUILD.dir
+D:/Cloth Mesh/pbd_sim/build/CMakeFiles/ZERO_CHECK.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/CMakeFiles/uninstall.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/CMakeFiles/INSTALL.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/CMakeFiles/ALL_BUILD.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/src/CMakeFiles/glfw.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/src/CMakeFiles/update_mappings.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/src/CMakeFiles/INSTALL.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glm-build/CMakeFiles/INSTALL.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glm-build/CMakeFiles/ALL_BUILD.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glm-build/glm/CMakeFiles/glm.dir
+D:/Cloth Mesh/pbd_sim/build/_deps/glm-build/glm/CMakeFiles/INSTALL.dir

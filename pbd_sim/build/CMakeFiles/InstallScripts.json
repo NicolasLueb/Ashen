@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/Cloth Mesh/pbd_sim/build/cmake_install.cmake",
+		"D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/cmake_install.cmake",
+		"D:/Cloth Mesh/pbd_sim/build/_deps/glfw-build/src/cmake_install.cmake",
+		"D:/Cloth Mesh/pbd_sim/build/_deps/glm-build/cmake_install.cmake",
+		"D:/Cloth Mesh/pbd_sim/build/_deps/glm-build/glm/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

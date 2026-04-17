@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Cloth Mesh\pbd_sim\build\CMakeFiles\5d9bb17d6588db96a046ac08dbcf919c\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{79BE2D3D-31B1-3657-911A-B17F6018AF91}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
