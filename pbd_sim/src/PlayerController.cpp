@@ -7,12 +7,13 @@
 //  Main update
 // ============================================================
 
-void PlayerController::update(
+bool PlayerController::update(
     GLFWwindow* win, Player& p, const Level& level,
     std::vector<Particle>& particles,
     std::vector<DistanceConstraint>& constraints,
     float gravity, float dt)
 {
+    bool hitSpike = false;
     // ---- Read jump input ----
     bool jumpPressed = key(win, GLFW_KEY_SPACE) ||
                        key(win, GLFW_KEY_W)     ||
@@ -26,10 +27,20 @@ void PlayerController::update(
 
     // ---- Resolve against level geometry ----
     bool prevOnGround = p.onGround;
+    bool hitCeiling = false;
     p.position = level.resolvePlayer(
         p.position, p.velocity,
         p.cfg.bodyRadius, p.cfg.height * 0.5f,
-        p.onGround, p.onWall, p.wallDir);
+        p.onGround, p.onWall, p.wallDir,
+        hitCeiling, hitSpike);
+
+    // Ceiling stops upward velocity
+    if (hitCeiling && p.velocity.y > 0.f)
+        p.velocity.y = 0.f;
+
+    // Apply wind forces
+    glm::vec2 wind = level.windAt(p.position);
+    p.velocity += wind * dt;
 
     // ---- Coyote time ----
     if (prevOnGround && !p.onGround && p.velocity.y <= 0.f)
@@ -105,16 +116,19 @@ void PlayerController::update(
         p.jumpBufferTimer = 0.f;
         p.coyoteTimer     = 0.f;
         p.state           = PlayerState::Jumping;
+        p.onJump();   // squash/stretch
+        m_justJumped  = true;
     }
     else if (canWallJump)
     {
-        // Jump away from the wall
         p.velocity.y     = p.cfg.wallJumpVY;
         p.velocity.x     = -p.wallDir * p.cfg.wallJumpVX;
         p.facingRight    = (p.velocity.x > 0.f);
         p.jumpBufferTimer = 0.f;
         p.wallJumpTimer  = p.cfg.wallJumpLockout;
         p.state          = PlayerState::WallJumping;
+        p.onJump();
+        m_justJumped = true;
     }
 
     // ---- Update grapple (pendulum constraint) ----
@@ -128,6 +142,18 @@ void PlayerController::update(
 
     // ---- Update state ----
     updateState(p);
+
+    // ---- Squash/stretch ----
+    p.updateSquash(dt);
+    // Land detection — just became grounded
+    if (p.onGround && !p.wasOnGround)
+    {
+        p.onLand();
+        m_justLanded = true;
+    }
+    p.wasOnGround = p.onGround;
+
+    return hitSpike;
 }
 
 // ============================================================

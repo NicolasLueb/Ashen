@@ -6,6 +6,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <cstdlib>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -100,6 +101,47 @@ void GameRenderer::draw(
 
     drawBackground(cam, biome);
     drawLevel(level, VP, biome);
+
+    // Wind zones
+    static float wt = 0.f; wt += 0.016f;
+    for (const auto& wz : level.windZones)
+        drawWindZone(wz.pos, wz.size, wz.force, wt, VP);
+
+    // Spikes and ceiling markers
+    for (const auto& p : level.platforms)
+    {
+        if (p.isSpike)   drawSpikes(p.pos, p.size, VP);
+        if (p.isCeiling) {
+            // Ceiling underside — dashed warning stripes
+            drawRect({p.pos.x,p.pos.y-p.size.y},{p.size.x,p.size.y},
+                     VP, 0.12f,0.10f,0.18f,0.55f);
+            drawRect({p.pos.x,p.pos.y-p.size.y+0.04f},{p.size.x,0.04f},
+                     VP, 0.35f,0.28f,0.5f,0.7f);
+        }
+        if (p.isMoving)
+        {
+            // Moving platform — amber glow underneath
+            drawRect({p.pos.x,p.pos.y-p.size.y},{p.size.x+0.1f,0.08f},
+                     VP, 0.8f,0.55f,0.1f,0.5f);
+        }
+        if (p.isDisappear && !p.dropped)
+        {
+            // Disappear platform — flash red as standTimer fills
+            float warn = p.standTimer / glm::max(p.standLimit, 0.01f);
+            if (warn > 0.01f)
+            {
+                // Red flash overlay — more intense as about to drop
+                float flash = warn * warn;
+                float flicker = warn > 0.7f ? (0.5f + 0.5f*sinf(warn*40.f)) : 1.f;
+                drawRect(p.pos, p.size, VP,
+                         0.9f, 0.2f, 0.1f, flash * 0.6f * flicker);
+            }
+            // Small cracks indicator on bottom edge
+            drawRect({p.pos.x, p.pos.y-p.size.y+0.04f}, {p.size.x*0.8f, 0.04f},
+                     VP, 0.55f, 0.3f, 0.25f, 0.5f);
+        }
+    }
+
     drawPhysicsObjects(particles, constraints, VP);
     drawGrapple(player, particles, VP);
     drawPlayer(player, VP);
@@ -434,21 +476,25 @@ void GameRenderer::drawLevel(const Level& level,
 
     for (const auto& p : level.platforms)
     {
-        // Outline pass — draw slightly larger in dark colour
-        float os = 0.07f;  // outline size in world units
-        drawRect(p.pos, {p.size.x+os, p.size.y+os}, VP,
-                 0.04f,0.03f,0.06f,0.95f);
+        // Outline pass
+        float os = 0.07f;
+        drawRect(p.pos, {p.size.x+os, p.size.y+os}, VP, 0.04f,0.03f,0.06f,0.95f);
 
         // Fill pass
-        drawRect(p.pos, p.size, VP,
-                 pal.platformR, pal.platformG, pal.platformB);
+        drawRect(p.pos, p.size, VP, pal.platformR, pal.platformG, pal.platformB);
 
-        // Top edge highlight — the "lit from above" hand-drawn look
+        // Top edge highlight — lit from above
         drawRect({p.pos.x, p.pos.y+p.size.y-0.04f},
                  {p.size.x, 0.04f}, VP,
                  pal.edgeR, pal.edgeG, pal.edgeB, 0.85f);
 
-        // Subtle side lines
+        // Bottom depth face — darker, gives 3D impression
+        float depthH = glm::min(p.size.y * 0.4f, 0.25f);
+        drawRect({p.pos.x, p.pos.y - p.size.y + depthH*0.5f},
+                 {p.size.x, depthH}, VP,
+                 pal.platformR*0.45f, pal.platformG*0.45f, pal.platformB*0.50f, 0.95f);
+
+        // Side edge lines
         drawRect({p.pos.x-p.size.x+0.03f, p.pos.y},
                  {0.03f, p.size.y}, VP,
                  pal.edgeR*0.6f, pal.edgeG*0.6f, pal.edgeB*0.6f, 0.4f);
@@ -459,7 +505,6 @@ void GameRenderer::drawLevel(const Level& level,
         // Abyss: add floating rock cracks
         if (biome == Biome::Abyss)
         {
-            // Diagonal crack lines across platform surface
             drawLine({p.pos.x-p.size.x*0.3f, p.pos.y+p.size.y*0.4f},
                      {p.pos.x+p.size.x*0.1f, p.pos.y-p.size.y*0.3f},
                      VP, 0.0f,0.0f,0.0f,0.3f);
@@ -470,13 +515,36 @@ void GameRenderer::drawLevel(const Level& level,
     }
 }
 
+// ---- Draw spikes and ceiling markers on top ----
+void drawPlatformDecorations(const Level& level,
+                              const glm::mat4& VP,
+                              GameRenderer* r)
+{
+    for (const auto& p : level.platforms)
+    {
+        if (p.isSpike)
+            r->drawSpikes(p.pos, p.size, VP);
+        if (p.isCeiling)
+        {
+            // Ceiling marker — subtle drip pattern
+            r->drawRect({p.pos.x, p.pos.y},
+                        {p.size.x, p.size.y},
+                        VP, 0.15f,0.12f,0.20f, 0.6f);
+        }
+    }
+}
+
 // ============================================================
 //  Player — capsule with outlined hand-painted style
 // ============================================================
 void GameRenderer::drawPlayer(const Player& p, const glm::mat4& VP)
 {
-    float hw = p.cfg.bodyRadius;
-    float hh = p.cfg.height*0.5f;
+    // Apply squash/stretch to body dimensions
+    float hw = p.cfg.bodyRadius * p.scaleX;
+    float hh = p.cfg.height * 0.5f * p.scaleY;
+    // Keep feet on ground — offset upward by stretch amount
+    glm::vec2 pos = p.position;
+    pos.y += (p.cfg.height * 0.5f) * (p.scaleY - 1.f) * 0.5f;
 
     // State colours
     float r=0.75f,g=0.88f,b=1.0f;
@@ -491,29 +559,36 @@ void GameRenderer::drawPlayer(const Player& p, const glm::mat4& VP)
     default: break;
     }
 
-    float os = 0.06f;  // outline size
+    float os = 0.06f;
 
-    // Outline pass (dark)
-    drawCircle({p.position.x, p.position.y+hh-hw}, hw+os, VP, 0.04f,0.03f,0.06f);
-    drawCircle({p.position.x, p.position.y-hh+hw}, hw+os, VP, 0.04f,0.03f,0.06f);
-    drawRect(p.position, {hw+os, hh-hw+os}, VP, 0.04f,0.03f,0.06f);
+    // Outline pass
+    drawCircle({pos.x, pos.y+hh-hw}, hw+os, VP, 0.04f,0.03f,0.06f);
+    drawCircle({pos.x, pos.y-hh+hw}, hw+os, VP, 0.04f,0.03f,0.06f);
+    drawRect(pos, {hw+os, hh-hw+os}, VP, 0.04f,0.03f,0.06f);
 
-    // Fill pass
-    drawRect(p.position, {hw, hh-hw}, VP, r,g,b);
-    drawCircle({p.position.x, p.position.y+hh-hw}, hw, VP, r,g,b);
-    drawCircle({p.position.x, p.position.y-hh+hw}, hw, VP, r,g,b);
+    // Fill
+    drawRect(pos, {hw, hh-hw}, VP, r,g,b);
+    drawCircle({pos.x, pos.y+hh-hw}, hw, VP, r,g,b);
+    drawCircle({pos.x, pos.y-hh+hw}, hw, VP, r,g,b);
+
+    // Shine highlight
+    drawCircle({pos.x - hw*0.25f, pos.y+hh*0.35f},
+               hw*0.25f, VP, 1.f,1.f,1.f, 0.35f, 8);
 
     // Eye
-    float ex = p.position.x + (p.facingRight ? hw*0.45f : -hw*0.45f);
-    float ey = p.position.y + hh*0.3f;
-    drawCircle({ex,ey}, hw*0.20f, VP, 0.04f,0.03f,0.07f);
+    float ex = pos.x + (p.facingRight ? hw*0.45f : -hw*0.45f);
+    float ey = pos.y + hh*0.3f;
+    drawCircle({ex,ey}, hw*0.22f, VP, 0.04f,0.03f,0.07f);
+    // Pupil — looks in direction of movement
+    float px2 = ex + (p.facingRight ? hw*0.08f : -hw*0.08f);
+    drawCircle({px2,ey-hw*0.04f}, hw*0.10f, VP, 1.f,1.f,1.f, 0.9f, 6);
 
     // Direction nub
-    float tipX = p.position.x + (p.facingRight ? hw*1.25f : -hw*1.25f);
+    float tipX = pos.x + (p.facingRight ? hw*1.25f : -hw*1.25f);
     std::vector<float> tv={
-        p.position.x+(p.facingRight?hw*0.7f:-hw*0.7f), p.position.y+hw*0.25f, 0.f,
-        p.position.x+(p.facingRight?hw*0.7f:-hw*0.7f), p.position.y-hw*0.25f, 0.f,
-        tipX, p.position.y, 0.f,
+        pos.x+(p.facingRight?hw*0.7f:-hw*0.7f), pos.y+hw*0.25f, 0.f,
+        pos.x+(p.facingRight?hw*0.7f:-hw*0.7f), pos.y-hw*0.25f, 0.f,
+        tipX, pos.y, 0.f,
     };
     std::vector<unsigned int> ti={0,1,2};
     drawTris(tv,ti,VP, r*0.7f,g*0.7f,b*0.7f,0.85f);
@@ -568,43 +643,6 @@ void GameRenderer::drawPhysicsObjects(
         if (len > 5.f) continue;  // skip crazy long constraints
         drawLine({a.x,a.y},{b.x,b.y},VP, 0.45f,0.38f,0.55f,0.6f);
     }
-}
-
-// ============================================================
-//  Boss visual
-// ============================================================
-void GameRenderer::drawBoss(glm::vec2 pos, float size, bool rage,
-                             float animTime, const glm::mat4& VP)
-{
-    float pulse = sinf(animTime*3.f)*0.05f;
-    float s = size + pulse;
-
-    // Glow aura (rage = red, normal = dark amber)
-    float gr = rage?0.8f:0.4f, gg=rage?0.1f:0.25f, gb=rage?0.1f:0.1f;
-    drawCircle(pos, s*1.6f, VP, gr,gg,gb,0.15f);
-    drawCircle(pos, s*1.3f, VP, gr,gg,gb,0.2f);
-
-    // Body outline
-    drawRect(pos, {s+0.1f,s*1.2f+0.1f}, VP, 0.06f,0.04f,0.06f);
-    // Body fill
-    float r=rage?0.55f:0.38f, g=rage?0.12f:0.22f, b=0.18f;
-    drawRect(pos, {s,s*1.2f}, VP, r,g,b);
-
-    // Head
-    drawCircle({pos.x,pos.y+s*1.1f}, s*0.55f, VP, 0.06f,0.04f,0.06f);
-    drawCircle({pos.x,pos.y+s*1.1f}, s*0.5f,  VP, r*1.1f,g*1.1f,b);
-
-    // Eyes (glowing red in rage)
-    float er=rage?1.f:0.85f, eg=rage?0.1f:0.4f, eb=rage?0.1f:0.3f;
-    drawCircle({pos.x-s*0.2f,pos.y+s*1.2f},s*0.12f,VP,er,eg,eb);
-    drawCircle({pos.x+s*0.2f,pos.y+s*1.2f},s*0.12f,VP,er,eg,eb);
-
-    // Fists (two circles at sides, animated)
-    float fistY = pos.y + sinf(animTime*2.f)*0.15f;
-    drawCircle({pos.x-s*1.1f,fistY}, s*0.4f, VP, 0.05f,0.04f,0.05f);
-    drawCircle({pos.x-s*1.1f,fistY}, s*0.35f,VP, r,g,b);
-    drawCircle({pos.x+s*1.1f,fistY}, s*0.4f, VP, 0.05f,0.04f,0.05f);
-    drawCircle({pos.x+s*1.1f,fistY}, s*0.35f,VP, r,g,b);
 }
 
 // ============================================================
@@ -796,4 +834,364 @@ GLuint GameRenderer::makeShader(const char* vs,const char* fs)
     GLint ok=0;glGetProgramiv(p,GL_LINK_STATUS,&ok);
     if(!ok){char l[512];glGetProgramInfoLog(p,512,nullptr,l);throw std::runtime_error("link");}
     glDeleteShader(v);glDeleteShader(f);return p;
+}
+
+// ============================================================
+//  drawBoss — 3 completely distinct visuals
+// ============================================================
+void GameRenderer::drawBoss(glm::vec2 pos, float size, bool rage,
+                             float animTime, const glm::mat4& VP,
+                             BossType type, float alpha)
+{
+    switch(type)
+    {
+    case BossType::Golem:
+    {
+        // GOLEM — massive blocky stone figure, slow heavy look
+        float s = size + sinf(animTime*0.9f)*0.04f;
+        float pulse = rage ? sinf(animTime*8.f)*0.08f : 0.f;
+
+        // Stone glow (rage = red-orange cracks)
+        float gr = rage?0.7f:0.25f, gg=rage?0.15f:0.18f, gb=rage?0.05f:0.22f;
+        drawCircle(pos, s*1.8f, VP, gr,gg,gb, 0.12f*alpha);
+        drawCircle(pos, s*1.3f, VP, gr,gg,gb, 0.18f*alpha);
+
+        // Body — wide rectangular torso, stone grey
+        drawRect({pos.x, pos.y+pulse}, {s+0.15f,s*1.3f+0.15f}, VP, 0.05f,0.04f,0.06f, alpha);
+        float br=rage?0.45f:0.35f, bg=0.30f, bb=0.32f;
+        drawRect({pos.x, pos.y+pulse}, {s, s*1.3f}, VP, br,bg,bb, alpha);
+
+        // Rough stone texture — darker patches
+        drawRect({pos.x-s*0.3f, pos.y+s*0.4f}, {s*0.25f,s*0.35f}, VP,
+                 br*0.7f,bg*0.7f,bb*0.7f, alpha*0.6f);
+        drawRect({pos.x+s*0.1f, pos.y-s*0.1f}, {s*0.2f,s*0.3f}, VP,
+                 br*0.7f,bg*0.7f,bb*0.7f, alpha*0.6f);
+
+        // Head — angular, helmet-like
+        float hx=pos.x, hy=pos.y+s*1.35f;
+        drawRect({hx, hy+0.1f}, {s*0.65f+0.1f, s*0.55f+0.1f}, VP, 0.05f,0.04f,0.06f, alpha);
+        drawRect({hx, hy},      {s*0.65f,       s*0.55f},       VP, br,bg,bb, alpha);
+
+        // Eyes — deep red glowing slits
+        float er=rage?1.f:0.7f, eg=rage?0.1f:0.05f;
+        drawRect({hx-s*0.22f, hy+s*0.08f}, {s*0.13f,s*0.06f}, VP, er,eg,0.f, alpha);
+        drawRect({hx+s*0.22f, hy+s*0.08f}, {s*0.13f,s*0.06f}, VP, er,eg,0.f, alpha);
+
+        // Massive fists — larger than the body sides
+        float fistOff = s*1.15f;
+        float fistY   = pos.y - s*0.1f + sinf(animTime*1.5f)*0.12f;
+        for (float fx : {pos.x-fistOff, pos.x+fistOff})
+        {
+            drawRect({fx, fistY+0.1f}, {s*0.55f+0.1f,s*0.55f+0.1f}, VP, 0.05f,0.04f,0.06f, alpha);
+            drawRect({fx, fistY},      {s*0.55f,       s*0.55f},       VP, br*0.9f,bg*0.9f,bb*0.9f, alpha);
+        }
+
+        // Ground cracks if rage
+        if (rage)
+        {
+            float cy = pos.y - s*1.3f;
+            for (int i=0;i<5;++i)
+            {
+                float cx = pos.x + (i-2)*s*0.5f;
+                float cl = 0.3f + fabsf(sinf(i*2.1f))*0.5f;
+                drawLine({cx,cy},{cx+(((float)rand()/RAND_MAX)-0.5f)*0.8f,cy-cl},
+                         VP, 0.8f,0.3f,0.05f,0.6f*alpha);
+            }
+        }
+        break;
+    }
+    case BossType::Wraith:
+    {
+        // WRAITH — ethereal, ghostly, multiple translucent layers
+        // The Wraith has NO solid form — it's all transparency and glow
+        float s = size;
+        float flicker = 0.7f + 0.3f*sinf(animTime*12.f + sinf(animTime*7.3f));
+        float a = alpha * flicker;
+
+        // Outer ethereal glow rings (concentric, offset, rotating)
+        for (int ring=0;ring<4;++ring)
+        {
+            float ra = a * (0.08f + ring*0.04f);
+            float rr = s*(1.5f+ring*0.4f);
+            float angle = animTime*(0.3f+ring*0.15f) + ring*1.57f;
+            glm::vec2 rPos = {pos.x+cosf(angle)*s*0.15f*ring,
+                              pos.y+sinf(angle)*s*0.1f*ring};
+            drawCircle(rPos, rr, VP, 0.3f,0.1f,0.6f, ra);
+        }
+
+        // Core body — dark void shape, slightly asymmetric
+        float bodyPulse = sinf(animTime*5.f)*0.08f;
+        drawCircle({pos.x+bodyPulse, pos.y}, s*0.9f, VP,
+                   0.08f,0.04f,0.18f, a*0.85f);
+        drawCircle({pos.x-bodyPulse*0.5f, pos.y+s*0.2f}, s*0.6f, VP,
+                   0.05f,0.02f,0.12f, a*0.9f);
+
+        // Tendrils — 5 dark streamers extending outward
+        for (int t=0;t<5;++t)
+        {
+            float ta = animTime*1.2f + t*(float)M_PI*2.f/5.f;
+            float tr = s*(0.8f+sinf(animTime*3.f+t)*0.3f);
+            float tx = pos.x + cosf(ta)*tr;
+            float ty = pos.y + sinf(ta)*tr*0.7f;
+            drawLine({pos.x,pos.y},{tx,ty},VP, 0.4f,0.1f,0.7f, a*0.5f);
+            drawCircle({tx,ty}, s*0.12f, VP, 0.5f,0.15f,0.8f, a*0.6f);
+        }
+
+        // Eyes — two bright white points that move
+        float ex1 = pos.x + sinf(animTime*3.f)*s*0.25f - s*0.2f;
+        float ex2 = pos.x + sinf(animTime*3.f+1.f)*s*0.25f + s*0.2f;
+        float ey  = pos.y + cosf(animTime*2.f)*s*0.15f + s*0.3f;
+        drawCircle({ex1,ey}, s*0.12f, VP, 1.f,0.9f,1.f, a*0.95f, 8);
+        drawCircle({ex2,ey}, s*0.12f, VP, 1.f,0.9f,1.f, a*0.95f, 8);
+
+        // Rage: additional red tinge and faster movement artifacts
+        if (rage)
+        {
+            drawCircle(pos, s*2.f, VP, 0.6f,0.05f,0.3f, 0.08f*a);
+            for (int t=0;t<3;++t)
+            {
+                float ta=animTime*3.f+t*2.09f;
+                float tr=s*1.2f;
+                drawLine({pos.x,pos.y},
+                         {pos.x+cosf(ta)*tr,pos.y+sinf(ta)*tr},
+                         VP,0.8f,0.1f,0.4f,a*0.4f);
+            }
+        }
+        break;
+    }
+    case BossType::Dragon:
+    {
+        // DRAGON — massive, serpentine, fills the upper arena
+        float s = size;
+        float wingBeat = sinf(animTime*2.5f);
+
+        // Body glow — intense orange-red
+        float gr=rage?0.9f:0.7f, gg=rage?0.2f:0.15f, gb=0.05f;
+        drawCircle(pos, s*2.2f, VP, gr,gg,gb, 0.1f*alpha);
+        drawCircle(pos, s*1.6f, VP, gr,gg,gb, 0.18f*alpha);
+
+        // Main body — elongated, rotated slightly
+        drawRect({pos.x,pos.y+0.15f},{s*1.5f+0.15f,s*0.9f+0.15f},
+                 VP, 0.1f,0.06f,0.04f, alpha);
+        drawRect({pos.x,pos.y},{s*1.5f,s*0.9f}, VP, gr*0.8f,gg*0.5f,gb+0.1f, alpha);
+
+        // Neck extending down
+        drawRect({pos.x+s*0.6f,pos.y-s*0.8f},{s*0.4f,s*0.9f},
+                 VP, gr*0.75f,gg*0.4f,gb+0.08f, alpha);
+
+        // Head
+        glm::vec2 hPos={pos.x+s,pos.y-s*1.4f};
+        drawRect({hPos.x+0.1f,hPos.y+0.1f},{s*0.65f+0.1f,s*0.5f+0.1f},
+                 VP, 0.1f,0.06f,0.04f, alpha);
+        drawRect(hPos,{s*0.65f,s*0.5f}, VP, gr*0.85f,gg*0.45f,gb+0.05f, alpha);
+
+        // Jaws — open wide
+        drawRect({hPos.x,hPos.y-s*0.35f+sinf(animTime*3.f)*s*0.15f},
+                 {s*0.6f,s*0.12f},
+                 VP, gr,gg*0.3f,gb, alpha);
+
+        // Fire glow in mouth
+        drawCircle({hPos.x+s*0.4f,hPos.y-s*0.2f}, s*0.25f,
+                   VP, 1.f,0.6f,0.1f, 0.7f*alpha);
+
+        // Eyes — glowing yellow
+        drawCircle({hPos.x+s*0.2f,hPos.y+s*0.1f}, s*0.12f,
+                   VP, 1.f,0.8f,0.1f, alpha);
+
+        // Wings — large flat triangles
+        float wingY = pos.y + s*0.2f + wingBeat*s*0.3f;
+        // Left wing
+        std::vector<float> lwv={
+            pos.x-s,     wingY,        0.f,
+            pos.x-s*3.f, wingY+s*1.2f, 0.f,
+            pos.x-s*2.5f,wingY-s*0.8f, 0.f,
+        };
+        std::vector<unsigned int> wi={0,1,2};
+        drawTris(lwv,wi,VP,gr*0.6f,gg*0.3f,0.05f, 0.7f*alpha);
+        // Right wing
+        std::vector<float> rwv={
+            pos.x+s,     wingY,        0.f,
+            pos.x+s*3.f, wingY+s*1.2f, 0.f,
+            pos.x+s*2.5f,wingY-s*0.8f, 0.f,
+        };
+        drawTris(rwv,wi,VP,gr*0.6f,gg*0.3f,0.05f, 0.7f*alpha);
+
+        // Rage: additional fire particles
+        if (rage)
+        {
+            for (int i=0;i<6;++i)
+            {
+                float fa=animTime*4.f+i*1.05f;
+                float fr=s*0.4f+sinf(fa)*s*0.3f;
+                drawCircle({hPos.x+cosf(fa)*fr,hPos.y+sinf(fa)*fr},
+                           s*0.08f, VP, 1.f,0.5f,0.1f,0.8f*alpha,6);
+            }
+        }
+        break;
+    }
+    }
+}
+
+// ============================================================
+//  drawOrb
+// ============================================================
+void GameRenderer::drawOrb(glm::vec2 pos, float radius,
+                            const glm::mat4& VP, BossType type)
+{
+    if (type == BossType::Wraith)
+    {
+        // Dark void orb with purple glow
+        drawCircle(pos, radius*2.f, VP, 0.4f,0.1f,0.7f, 0.2f);
+        drawCircle(pos, radius*1.3f,VP, 0.25f,0.05f,0.5f,0.5f);
+        drawCircle(pos, radius,     VP, 0.05f,0.02f,0.15f,0.9f);
+        // Bright core
+        drawCircle(pos, radius*0.4f,VP, 0.8f,0.6f,1.f, 0.9f,6);
+    }
+    else // Dragon — fire orb
+    {
+        drawCircle(pos, radius*2.f, VP, 1.f,0.4f,0.1f, 0.15f);
+        drawCircle(pos, radius*1.3f,VP, 0.9f,0.3f,0.05f,0.4f);
+        drawCircle(pos, radius,     VP, 0.7f,0.15f,0.f, 0.9f);
+        drawCircle(pos, radius*0.4f,VP, 1.f,0.9f,0.5f, 0.95f,6);
+    }
+}
+
+// ============================================================
+//  drawBreathColumn — Dragon fire sweeping floor to ceiling
+// ============================================================
+void GameRenderer::drawBreathColumn(float x, float width, float progress,
+                                     float floorY, float ceilY,
+                                     const glm::mat4& VP)
+{
+    float h  = ceilY - floorY;
+    float cy = floorY + h*0.5f;
+    float fade = 1.f - progress*progress;
+
+    // Outer glow — wide, transparent
+    drawRect({x,cy},{width*2.5f,h*0.5f}, VP, 1.f,0.4f,0.1f, 0.12f*fade);
+    // Inner column
+    drawRect({x,cy},{width,h*0.5f}, VP, 1.f,0.6f,0.15f, 0.85f*fade);
+    // Core — bright white-yellow
+    drawRect({x,cy},{width*0.4f,h*0.5f}, VP, 1.f,0.95f,0.6f, 0.9f*fade);
+
+    // Flame particles at top
+    for (int i=0;i<4;++i)
+    {
+        float px = x + (sinf(progress*20.f+i)*width*0.3f);
+        float py = ceilY - 0.3f - i*0.4f;
+        drawCircle({px,py}, width*0.25f, VP, 1.f,0.7f,0.2f, 0.6f*fade, 6);
+    }
+}
+
+// ============================================================
+//  drawTailBlock — Dragon tail blocking half arena
+// ============================================================
+void GameRenderer::drawTailBlock(float x, int side, float progress,
+                                  float floorY, float ceilY,
+                                  const glm::mat4& VP)
+{
+    float h      = ceilY - floorY;
+    float cy     = floorY + h*0.5f;
+    float fade   = 1.f - progress*progress;
+
+    // Determine which half is blocked
+    float blockX = (side == -1) ? x - 5.f : x + 5.f;
+    float blockW = 5.f;
+
+    // Dark semi-transparent block
+    drawRect({blockX,cy},{blockW,h*0.5f}, VP, 0.1f,0.04f,0.06f, 0.7f*fade);
+    // Glowing edge at x
+    drawRect({x,cy},{0.15f,h*0.5f}, VP, 0.8f,0.3f,0.2f, 0.9f*fade);
+
+    // "BLOCKED" warning pattern — diagonal stripes
+    for (int i=0;i<6;++i)
+    {
+        float sy = floorY + i*(h/6.f);
+        float sx = (side==-1) ? x : blockX;
+        float ex = sx + side*blockW*0.5f;
+        drawLine({sx,sy},{ex,sy+h/8.f}, VP, 0.7f,0.2f,0.15f, 0.4f*fade);
+    }
+}
+
+// ============================================================
+//  drawWindZone
+// ============================================================
+void GameRenderer::drawWindZone(glm::vec2 pos, glm::vec2 size,
+                                 glm::vec2 force, float animTime,
+                                 const glm::mat4& VP)
+{
+    bool isHoriz = fabsf(force.x) > fabsf(force.y);
+    float a = 0.12f + sinf(animTime*3.f)*0.04f;
+
+    // Background fill
+    drawRect(pos,size,VP, 0.3f,0.5f,0.8f, a);
+
+    // Arrows showing direction
+    float dir = isHoriz ? (force.x>0?1.f:-1.f) : (force.y>0?1.f:-1.f);
+    int arrows = 3;
+    for (int i=0;i<arrows;++i)
+    {
+        float t = ((float)i/arrows + fmodf(animTime*0.5f,1.f));
+        float ax = isHoriz ? pos.x-size.x+t*size.x*2.f : pos.x+(i-1)*size.x*0.5f;
+        float ay = isHoriz ? pos.y+(i-1)*size.y*0.4f   : pos.y-size.y+t*size.y*2.f;
+
+        // Arrow tip
+        float tipX = ax + (isHoriz ? dir*0.5f : 0.f);
+        float tipY = ay + (isHoriz ? 0.f : dir*0.5f);
+        drawLine({ax,ay},{tipX,tipY},VP, 0.5f,0.7f,1.f,0.7f);
+        drawCircle({tipX,tipY},0.1f,VP,0.5f,0.7f,1.f,0.7f,4);
+    }
+}
+
+// ============================================================
+//  drawSpikes
+// ============================================================
+void GameRenderer::drawSpikes(glm::vec2 pos, glm::vec2 size,
+                               const glm::mat4& VP)
+{
+    // Row of triangular spikes
+    float spikeW = 0.25f;
+    int   count  = (int)(size.x * 2.f / spikeW);
+    float startX = pos.x - size.x;
+
+    for (int i=0;i<count;++i)
+    {
+        float sx = startX + i*spikeW + spikeW*0.5f;
+        // Base rect
+        drawRect({sx, pos.y-size.y*0.3f},{spikeW*0.4f,size.y*0.3f},
+                 VP, 0.5f,0.15f,0.15f, 0.9f);
+        // Spike tip
+        std::vector<float> tv={
+            sx-spikeW*0.4f, pos.y, 0.f,
+            sx+spikeW*0.4f, pos.y, 0.f,
+            sx,             pos.y+size.y*0.8f, 0.f,
+        };
+        std::vector<unsigned int> ti={0,1,2};
+        drawTris(tv,ti,VP, 0.7f,0.15f,0.1f, 0.95f);
+        // Highlight
+        drawLine({sx,pos.y},{sx,pos.y+size.y*0.8f},
+                 VP, 0.9f,0.5f,0.4f,0.5f);
+    }
+}
+
+// ============================================================
+//  drawGhost — translucent silhouette of the player's best run
+// ============================================================
+void GameRenderer::drawGhost(glm::vec2 pos, bool facingRight,
+                              int stateIdx, const glm::mat4& VP)
+{
+    float hw = 0.32f;
+    float hh = 0.325f;
+
+    // Ghost is always the same pale lavender, ~25% opacity
+    float r = 0.7f, g = 0.6f, b = 1.0f, a = 0.22f;
+
+    drawCircle({pos.x, pos.y+hh-hw}, hw, VP, r,g,b, a);
+    drawCircle({pos.x, pos.y-hh+hw}, hw, VP, r,g,b, a);
+    drawRect(pos, {hw, hh-hw}, VP, r,g,b, a);
+
+    // Outline slightly brighter so it reads against dark backgrounds
+    float oa = 0.35f;
+    drawCircle({pos.x, pos.y+hh-hw}, hw+0.04f, VP, r,g,b, oa);
+    drawCircle({pos.x, pos.y-hh+hw}, hw+0.04f, VP, r,g,b, oa);
 }

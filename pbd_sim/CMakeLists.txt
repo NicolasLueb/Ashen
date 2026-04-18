@@ -51,4 +51,4 @@ target_include_directories(pbd_sim PRIVATE
     ${imgui_SOURCE_DIR}/backends
 )
 
-target_link_libraries(pbd_sim PRIVATE glfw glad glm::glm imgui_lib opengl32)
+target_link_libraries(pbd_sim PRIVATE glfw glad glm::glm imgui_lib opengl32 winmm)

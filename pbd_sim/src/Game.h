@@ -9,12 +9,16 @@
 #include "MainMenu.h"
 #include "GameRenderer.h"
 #include "VFX.h"
+#include "Audio.h"
+#include "Ghost.h"
+#include "SaveSystem.h"
 #include "Simulation.h"
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <string>
 
 class Game
 {
@@ -34,24 +38,32 @@ private:
     void loadLevel(int index);
     void applyPhysicsPreset(const PhysicsPreset& preset);
     void buildBossArena();
+    void addArenaPlat(glm::vec2 center, glm::vec2 half,
+                      bool ceiling=false, bool moving=false);
     void updateMainMenu(float dt);
     void updatePlaying(float dt);
     void updateBossFight(float dt);
     void updateTransition(float dt);
     void renderGame();
     void renderHUD();
-    void renderDevOverlay();   // F1 in-game dev shortcuts panel
+    void renderDevOverlay();
 
-    // REVISED: instant death, no lives
     void respawnPlayer();
-    void killPlayer();           // instant restart, no penalty
+    void killPlayer();
 
-    // Portal and fragment state
+    // Fragment pickup display
+    struct FragmentPopup {
+        std::string text;
+        float       timer = 0.f;
+        glm::vec2   screenPos = {0.f,0.f};
+    };
+    std::vector<FragmentPopup> m_fragmentPopups;
+    void updateFragmentPopups(float dt);
+
     glm::vec2 m_portalPos  = {0.f,0.f};
     bool      m_portalOpen = false;
     float     m_portalAnim = 0.f;
 
-    // Text fragments for current level
     std::vector<glm::vec2> m_fragmentPositions;
     std::vector<bool>      m_fragmentFound;
 
@@ -68,6 +80,9 @@ private:
     HUD              m_hud;
     MainMenu         m_menu;
     VFX              m_vfx;
+    Audio            m_audio;
+    Ghost            m_ghost;
+    SaveSystem       m_save;
 
     int   m_vpW = 1200, m_vpH = 850;
     float m_fadeAlpha      = 1.f;
@@ -77,9 +92,9 @@ private:
     float m_menuAnimTime   = 0.f;
     float m_invincTimer    = 0.f;
     float m_bossIntroTimer = 0.f;
-    float m_deathTimer     = 0.f;   // brief pause before respawn
+    float m_deathTimer     = 0.f;
     bool  m_deathPending   = false;
-    bool  m_devOverlay     = false;  // F1 toggles dev shortcut overlay
+    bool  m_devOverlay     = false;
     const float DEATH_PAUSE    = 0.35f;
     const float INVINCIBLE_DUR = 0.8f;
 };

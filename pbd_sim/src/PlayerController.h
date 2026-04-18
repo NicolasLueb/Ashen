@@ -24,11 +24,15 @@
 class PlayerController
 {
 public:
-    // Update player for one frame
-    void update(GLFWwindow* win, Player& player, const Level& level,
+    // Returns true if player hit a spike (instant kill)
+    bool update(GLFWwindow* win, Player& player, const Level& level,
                 std::vector<Particle>& particles,
                 std::vector<DistanceConstraint>& constraints,
                 float gravity, float dt);
+
+    // Audio event flags — read and clear each frame by Game
+    bool m_justJumped = false;
+    bool m_justLanded = false;
 
     // Fire grapple toward target world position
     void fireGrapple(Player& player, const Level& level,

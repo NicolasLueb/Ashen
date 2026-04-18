@@ -154,7 +154,7 @@ int main()
         double now = glfwGetTime();
         float  dt  = (float)(now - prev) * speed;
         prev = now;
-        dt = glm::min(dt, 0.05f);
+        dt = dt > 0.05f ? 0.05f : dt;
 
         if (!paused)
         {
